@@ -61,6 +61,24 @@ class IntentModel:
             
             "User: no\n"
             "{{ \"intent\": \"CANCEL\", \"confidence\": 0.90, \"entities\": {{}} }}\n\n"
+            
+            "User: do it again\n"
+            "{{ \"intent\": \"REPEAT\", \"confidence\": 0.90, \"entities\": {{}} }}\n\n"
+            
+            "User: repeat that\n"
+            "{{ \"intent\": \"REPEAT\", \"confidence\": 0.90, \"entities\": {{}} }}\n\n"
+            
+            "User: cpu usage\n"
+            "{{ \"intent\": \"SYSTEM_STATUS\", \"confidence\": 0.95, \"entities\": {{\"type\": \"cpu\"}} }}\n\n"
+            
+            "User: memory usage\n"
+            "{{ \"intent\": \"SYSTEM_STATUS\", \"confidence\": 0.95, \"entities\": {{\"type\": \"memory\"}} }}\n\n"
+            
+            "User: battery status\n"
+            "{{ \"intent\": \"SYSTEM_STATUS\", \"confidence\": 0.95, \"entities\": {{\"type\": \"battery\"}} }}\n\n"
+            
+            "User: what time is it\n"
+            "{{ \"intent\": \"SYSTEM_STATUS\", \"confidence\": 0.95, \"entities\": {{\"type\": \"time\"}} }}\n\n"
 
 
             "RULES:\n"

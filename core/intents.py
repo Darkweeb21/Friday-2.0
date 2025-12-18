@@ -24,6 +24,7 @@ INTENTS = {
     "UNKNOWN": "Unclear intent",
     "CONFIRM": "Confirm a pending action",
     "CANCEL": "Cancel a pending action",
+    "REPEAT": "Repeat the last action",
 
 
 }

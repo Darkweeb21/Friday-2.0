@@ -33,3 +33,20 @@ Microsoft Store apps support
 Needed for apps like WhatsApp (not normal .exe).
 Launched via explorer.exe shell:AppsFolder\<AppID>.
 
+
+
+Right now, FRIDAY has:
+
+System control (apps, volume, power, screenshots)
+
+System status (CPU, RAM, GPU, battery, specs)
+
+Confirmation layer (safe destructive actions)
+
+Context actions (repeat / confirm / cancel)
+
+Normal conversation fallback
+
+Clean modular architecture
+
+That’s a strong, stable baseline.

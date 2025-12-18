@@ -69,6 +69,54 @@ def power_handler(entities):
 
     return "I didn't understand the power command."
 
+def system_status_handler(entities):
+    from plugins.system.status import (
+        cpu_usage,
+        memory_usage,
+        battery_status,
+        current_time
+    )
+
+    query = entities.get("type")
+
+    if query == "cpu":
+        return cpu_usage()
+    if query == "memory":
+        return memory_usage()
+    if query == "battery":
+        return battery_status()
+    if query == "time":
+        return current_time()
+
+    return "I didn't understand the system status request."
+def system_status_handler(entities):
+    from plugins.system.status import (
+        cpu_usage,
+        memory_usage,
+        battery_status,
+        current_time,
+        gpu_usage
+    )
+    from plugins.system.specs import device_specs
+
+    query = entities.get("type")
+
+    if query == "cpu":
+        return cpu_usage()
+    if query == "memory":
+        return memory_usage()
+    if query == "battery":
+        return battery_status()
+    if query == "time":
+        return current_time()
+    if query == "gpu":
+        return gpu_usage()
+
+    # ✅ FALLBACK: if no type → return full device specs
+    return device_specs()
+def general_chat_handler(entities):
+    from plugins.chat.general_chat import chat_response
+    return chat_response(entities.get("text", ""))
 
 
 INTENT_REGISTRY = {
@@ -79,4 +127,6 @@ INTENT_REGISTRY = {
     "POWER_CONTROL": power_handler,
     "GENERAL_CHAT": lambda e: "Chat handling will be added next.",
     "EXIT": lambda e: "EXIT",
+    "SYSTEM_STATUS": system_status_handler,
+    "GENERAL_CHAT": general_chat_handler,
 }

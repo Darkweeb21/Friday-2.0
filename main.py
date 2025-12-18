@@ -15,7 +15,8 @@ def main():
             continue
 
         intent_data = intent_model.classify(user_input)
-        response = route(intent_data)
+        response = route(intent_data, user_input)
+
 
         if response == "EXIT":
             print("FRIDAY: Shutting down.")
