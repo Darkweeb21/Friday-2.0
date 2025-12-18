@@ -1,0 +1,35 @@
+User Input
+   ↓
+phi3:mini (Intent Classifier)
+   ↓
+────────────────────────────
+OPEN_APP           → System Plugin (NO LLM)
+VOLUME_CONTROL     → System Plugin
+SYSTEM_STATUS      → System Plugin
+GENERAL_CHAT(short)→ phi3
+GENERAL_CHAT(long) → llama3:instruct
+SEARCH              → mistral
+CODE_HELP           → deepseek-coder
+UNKNOWN             → llama3:instruct
+
+for intent routing
+🧠 FRIDAY 2.0 – App Opening (Gist Notes)
+
+Built intent-based automation using a local LLM (phi3:mini)
+
+User input → intent + confidence + entities (e.g., app name)
+
+Routing only happens if confidence is high (safety gate)
+
+App opening logic (3 layers):
+
+Known aliases (fast & safe)
+chrome → chrome.exe, vscode → code.exe, etc.
+
+Fuzzy discovery
+Searches common install folders and opens app only if one clear match exists.
+
+Microsoft Store apps support
+Needed for apps like WhatsApp (not normal .exe).
+Launched via explorer.exe shell:AppsFolder\<AppID>.
+
