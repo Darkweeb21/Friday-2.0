@@ -1,10 +1,12 @@
 from core.confidence import is_confident
-from core.intent_registry import INTENT_REGISTRY
-from core.state import confirmation_manager
+from core.state import confirmation_manager, SESSION_ID
 import core.state as state
+from core.memory import MemoryStore
+from core.plugin_registry import PLUGIN_REGISTRY
 
 
-# Intents that MUST be confident (tasks)
+memory_store = MemoryStore()
+
 TASK_INTENTS = {
     "OPEN_APP",
     "CLOSE_APP",
@@ -31,34 +33,53 @@ def route(intent_data: dict, user_input: str) -> str:
     if intent == "CANCEL":
         return confirmation_manager.cancel()
 
-    # 🔁 Context memory: repeat last action
+    # 🔁 Repeat last action
     if intent == "REPEAT":
         if state.last_action:
-            return state.last_action(state.last_entities or {})
+            result = state.last_action.execute({
+                "text": user_input,
+                "intent": state.last_intent,
+                "entities": state.last_entities or {},
+            })
+            return result.get("response", "Failed to repeat last action.")
         return "Nothing to repeat."
 
-    # 🚫 Block LOW confidence ONLY for TASK intents
+    # 🚫 Confidence gate for task intents
     if intent in TASK_INTENTS and not is_confident(confidence):
         return "I'm not confident about that. Can you rephrase?"
 
-    # 🧠 Attach raw text for chat handlers
-    entities["text"] = user_input
+    # 🧠 Build plugin context
+    context = {
+        "text": user_input,
+        "intent": intent,
+        "entities": entities,
+    }
 
-    handler = INTENT_REGISTRY.get(intent)
+    # 🔌 Resolve plugin
+    plugin_cls = PLUGIN_REGISTRY.get(intent) or PLUGIN_REGISTRY.get("GENERAL_CHAT")
 
-    # 💬 Conversational fallback
-    if not handler:
-        chat_handler = INTENT_REGISTRY.get("GENERAL_CHAT")
-        if chat_handler:
-            return chat_handler({"text": user_input})
+    if not plugin_cls:
         return "I'm not sure how to respond to that."
 
-    response = handler(entities)
+    plugin = plugin_cls()
+    result = plugin.execute(context)
 
-    # 🧠 Save context ONLY for real actions (not chat)
+    response = result.get("response", "Something went wrong.")
+
+    # 💾 Persist conversation
+    memory_store.store(SESSION_ID, "user", intent, user_input)
+    memory_store.store(SESSION_ID, "assistant", intent, response)
+
+    # 🧠 Save last action (non-chat)
     if intent not in {"GENERAL_CHAT", "CONFIRM", "CANCEL"}:
         state.last_intent = intent
         state.last_entities = entities
-        state.last_action = handler
+        state.last_action = plugin
+
+    # 🧠 RAM chat memory (chat only)
+    if intent in {"GENERAL_CHAT", "UNKNOWN"}:
+        state.chat_history.append({"role": "user", "content": user_input})
+        state.chat_history.append({"role": "assistant", "content": response})
+        state.chat_history = state.chat_history[-state.CHAT_MEMORY_LIMIT:]
 
     return response

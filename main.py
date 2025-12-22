@@ -2,6 +2,15 @@
 
 from models.intent_model import IntentModel
 from core.router import route
+# 🔌 Force plugin imports (REQUIRED for registration)
+import plugins.system.open_app
+import plugins.system.close_app
+import plugins.system.volume
+import plugins.system.screenshot
+import plugins.system.system_status
+import plugins.system.power
+import plugins.chat.general_chat
+
 
 
 def main():

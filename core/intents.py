@@ -25,6 +25,7 @@ INTENTS = {
     "CONFIRM": "Confirm a pending action",
     "CANCEL": "Cancel a pending action",
     "REPEAT": "Repeat the last action",
+    "MEMORY_RECALL": "Recall previous conversation from memory",
 
 
 }

@@ -1,8 +1,17 @@
 from core.confirmation import ConfirmationManager
+import uuid
 
+# 🔐 Confirmation manager
 confirmation_manager = ConfirmationManager()
 
-# 🧠 Context memory
+# 🆔 Unique session per run
+SESSION_ID = str(uuid.uuid4())
+
+# 🧠 RAM chat memory (short-term)
+CHAT_MEMORY_LIMIT = 6
+chat_history = []  # [{"role": "user"/"assistant", "content": str}]
+
+# 🧠 Action / context memory
 last_intent = None
 last_entities = None
 last_action = None

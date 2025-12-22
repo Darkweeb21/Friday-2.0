@@ -1,59 +1,92 @@
-# plugins/system/volume.py
-
-import ctypes
 import time
+from core.plugin_base import PluginBase
 
-# Windows virtual key codes
-VK_VOLUME_MUTE = 0xAD
-VK_VOLUME_DOWN = 0xAE
-VK_VOLUME_UP = 0xAF
+try:
+    import pycaw
+    from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+    from ctypes import cast, POINTER
+    from comtypes import CLSCTX_ALL
+except ImportError:
+    pycaw = None
 
-KEYEVENTF_EXTENDEDKEY = 0x0001
-KEYEVENTF_KEYUP = 0x0002
 
+class VolumePlugin(PluginBase):
+    name = "volume_control"
+    intents = ["VOLUME_CONTROL"]
 
-def _press_key(vk_code, times=1, delay=0.05):
-    for _ in range(times):
-        ctypes.windll.user32.keybd_event(vk_code, 0, KEYEVENTF_EXTENDEDKEY, 0)
-        ctypes.windll.user32.keybd_event(
-            vk_code, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0
+    permission = "system.write"
+    requires_confirmation = False
+
+    def _get_volume_interface(self):
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(
+            IAudioEndpointVolume._iid_, CLSCTX_ALL, None
         )
-        time.sleep(delay)
+        return cast(interface, POINTER(IAudioEndpointVolume))
 
+    def _get_current_volume(self, volume):
+        # Returns volume in percentage (0–100)
+        return int(volume.GetMasterVolumeLevelScalar() * 100)
 
-def increase_volume():
-    _press_key(VK_VOLUME_UP, times=3)
-    return "Volume increased."
+    def _set_absolute_volume(self, volume, target):
+        target = max(0, min(100, target))
+        volume.SetMasterVolumeLevelScalar(target / 100.0, None)
+        return f"Volume set to {target}%."
 
+    def _step_volume(self, volume, step):
+        current = self._get_current_volume(volume)
+        target = max(0, min(100, current + step))
+        volume.SetMasterVolumeLevelScalar(target / 100.0, None)
+        return f"Volume changed to {target}%."
 
-def decrease_volume():
-    _press_key(VK_VOLUME_DOWN, times=3)
-    return "Volume decreased."
+    def execute(self, context):
+        if not pycaw:
+            return {
+                "success": False,
+                "response": "Volume control is not supported on this system.",
+                "data": {}
+            }
 
+        entities = context.get("entities", {})
+        action = entities.get("action")
+        level = entities.get("level")
 
-def mute_volume():
-    _press_key(VK_VOLUME_MUTE, times=1)
-    return "Volume muted."
+        volume = self._get_volume_interface()
 
+        # 🔇 Mute / Unmute
+        if action == "mute":
+            volume.SetMute(1, None)
+            return {"success": True, "response": "Volume muted.", "data": {}}
 
-def unmute_volume():
-    _press_key(VK_VOLUME_MUTE, times=1)
-    return "Volume unmuted."
+        if action == "unmute":
+            volume.SetMute(0, None)
+            return {"success": True, "response": "Volume unmuted.", "data": {}}
 
+        # 🎯 Absolute set (Alexa-style)
+        if action == "set" and isinstance(level, int):
+            return {
+                "success": True,
+                "response": self._set_absolute_volume(volume, level),
+                "data": {"level": level}
+            }
 
-def set_volume(level: int):
-    """
-    Deterministic volume setting using media keys.
-    First forces volume to 0, then raises to target level.
-    """
-    level = max(0, min(level, 100))
+        # 🔼 Relative increase / decrease
+        if action == "increase":
+            return {
+                "success": True,
+                "response": self._step_volume(volume, 5),
+                "data": {}
+            }
 
-    # Step 1: Force volume to minimum
-    _press_key(VK_VOLUME_DOWN, times=50)
+        if action == "decrease":
+            return {
+                "success": True,
+                "response": self._step_volume(volume, -5),
+                "data": {}
+            }
 
-    # Step 2: Raise volume to target
-    steps = int(level / 2)  # ~2% per key press (empirical)
-    _press_key(VK_VOLUME_UP, times=steps)
-
-    return f"Volume set approximately to {level}%."
-
+        return {
+            "success": False,
+            "response": "I didn’t understand the volume command.",
+            "data": {}
+        }

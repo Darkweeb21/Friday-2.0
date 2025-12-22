@@ -1,20 +1,27 @@
-# gives friday its personality and conersational skills
+# plugins/chat/general_chat.py
 
-from models.ollama_client import OllamaClient
-
-client = OllamaClient()
-
-SYSTEM_PROMPT = (
-    "You are FRIDAY, a friendly and intelligent desktop AI assistant. "
-    "You can hold natural conversations, explain concepts clearly, and respond casually when needed. "
-    "Be concise, helpful, and human-like."
-)
+from core.plugin_base import PluginBase
 
 
-def chat_response(user_input: str) -> str:
-    response = client.generate(
-        model="phi3:mini",
-        prompt=f"{SYSTEM_PROMPT}\nUser: {user_input}\nFRIDAY:",
-        temperature=0.7
-    )
-    return response.strip()
+class GeneralChatPlugin(PluginBase):
+    name = "general_chat"
+    intents = ["GENERAL_CHAT"]
+
+    permission = "basic"
+    requires_confirmation = False
+
+    def execute(self, context):
+        text = context.get("text", "").strip()
+
+        if not text:
+            return {
+                "success": True,
+                "response": "Hello! How can I help you?",
+                "data": {}
+            }
+
+        return {
+            "success": True,
+            "response": "I’m here. What would you like to do?",
+            "data": {}
+        }

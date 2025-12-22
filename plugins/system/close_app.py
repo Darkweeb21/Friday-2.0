@@ -1,43 +1,50 @@
 # plugins/system/close_app.py
 
 import subprocess
-
-KNOWN_ALIASES = {
-    "chrome": "chrome.exe",
-    "google chrome": "chrome.exe",
-    "edge": "msedge.exe",
-    "notepad": "notepad.exe",
-    "calculator": "calc.exe",
-    "cmd": "cmd.exe",
-    "powershell": "powershell.exe",
-    "vscode": "code.exe",
-    "visual studio code": "code.exe",
-    "spotify": "spotify.exe",
-}
+from core.plugin_base import PluginBase
 
 
-def close_app(app_name: str) -> str:
-    if not app_name:
-        return "No application name provided."
+class CloseAppPlugin(PluginBase):
+    name = "close_app"
+    intents = ["CLOSE_APP"]
 
-    key = app_name.lower()
-    exe = KNOWN_ALIASES.get(key)
+    permission = "system.write"
+    requires_confirmation = False
 
-    if not exe:
-        return f"I don't know how to close {app_name}."
+    def execute(self, context):
+        app = context.get("entities", {}).get("app")
 
-    try:
-        result = subprocess.run(
-            ["taskkill", "/IM", exe, "/F"],
-            capture_output=True,
-            text=True,
-            shell=True
-        )
+        if not app:
+            return {
+                "success": False,
+                "response": "Which application should I close?",
+                "data": {}
+            }
 
-        if result.returncode == 0:
-            return f"Closed {app_name}."
-        else:
-            return f"{app_name} is not running."
+        try:
+            result = subprocess.run(
+                f'taskkill /IM "{app}.exe" /F',
+                shell=True,
+                capture_output=True,
+                text=True
+            )
 
-    except Exception:
-        return f"Failed to close {app_name}."
+            if result.returncode == 0:
+                return {
+                    "success": True,
+                    "response": f"Closed {app}.",
+                    "data": {}
+                }
+
+            return {
+                "success": False,
+                "response": f"{app} is not running.",
+                "data": {}
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "response": f"Failed to close {app}.",
+                "data": {"error": str(e)}
+            }

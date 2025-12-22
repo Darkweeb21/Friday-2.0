@@ -1,20 +1,38 @@
-import os
-from datetime import datetime
+# plugins/system/screenshot.py
+
+import datetime
+from pathlib import Path
 import pyautogui
+from core.plugin_base import PluginBase
 
 
-def take_screenshot() -> str:
-    try:
-        screenshots_dir = os.path.join(os.getcwd(), "screenshots")
-        os.makedirs(screenshots_dir, exist_ok=True)
+class ScreenshotPlugin(PluginBase):
+    name = "screenshot"
+    intents = ["SCREENSHOT"]
 
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"screenshot_{timestamp}.png"
-        path = os.path.join(screenshots_dir, filename)
+    permission = "system.read"
+    requires_confirmation = False
 
-        image = pyautogui.screenshot()
-        image.save(path)
+    def execute(self, context):
+        try:
+            base_dir = Path.home() / "Pictures" / "FRIDAY"
+            base_dir.mkdir(parents=True, exist_ok=True)
 
-        return f"Screenshot taken and saved."
-    except Exception:
-        return "Failed to take screenshot."
+            filename = datetime.datetime.now().strftime("screenshot_%Y%m%d_%H%M%S.png")
+            path = base_dir / filename
+
+            screenshot = pyautogui.screenshot()
+            screenshot.save(path)
+
+            return {
+                "success": True,
+                "response": "Screenshot taken.",
+                "data": {"path": str(path)}
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "response": "Failed to take screenshot.",
+                "data": {"error": str(e)}
+            }

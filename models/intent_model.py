@@ -80,6 +80,14 @@ class IntentModel:
             "User: what time is it\n"
             "{{ \"intent\": \"SYSTEM_STATUS\", \"confidence\": 0.95, \"entities\": {{\"type\": \"time\"}} }}\n\n"
 
+            "User: what were we talking about before\n"
+            "{{ \"intent\": \"MEMORY_RECALL\", \"confidence\": 0.90, \"entities\": {{}} }}\n\n"
+            
+            "User: remind me what we discussed earlier\n"
+            "{{ \"intent\": \"MEMORY_RECALL\", \"confidence\": 0.90, \"entities\": {{}} }}\n\n"
+            
+            "User: what did I ask you previously\n"
+            "{{ \"intent\": \"MEMORY_RECALL\", \"confidence\": 0.90, \"entities\": {{}} }}\n\n"
 
             "RULES:\n"
             "- Output ONLY valid JSON\n"

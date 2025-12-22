@@ -1,3 +1,9 @@
+# ⚠️ LEGACY INTENT HANDLERS
+# This file is being phased out in favor of PluginBase architecture.
+# Do not add new handlers here.
+
+
+
 def open_app_handler(entities):
     from plugins.system.open_app import open_app
     return open_app(entities.get("app"))
@@ -114,9 +120,25 @@ def system_status_handler(entities):
 
     # ✅ FALLBACK: if no type → return full device specs
     return device_specs()
-def general_chat_handler(entities):
-    from plugins.chat.general_chat import chat_response
-    return chat_response(entities.get("text", ""))
+# def general_chat_handler(entities):
+#     from plugins.chat.general_chat import chat_response
+#     return chat_response(entities.get("text", ""))
+
+def memory_recall_handler(entities):
+    from core.memory import MemoryStore
+
+    memory_store = MemoryStore()
+    history = memory_store.get_recent_global(limit=6)
+
+    if not history:
+        return "I don’t see any past conversations yet."
+
+    summary = "Here’s what we discussed recently:\n"
+    for role, content in history:
+        prefix = "You" if role == "user" else "FRIDAY"
+        summary += f"- {prefix}: {content}\n"
+
+    return summary.strip()
 
 
 INTENT_REGISTRY = {
@@ -125,8 +147,9 @@ INTENT_REGISTRY = {
     "VOLUME_CONTROL": volume_handler,
     "SCREENSHOT": screenshot_handler,
     "POWER_CONTROL": power_handler,
-    "GENERAL_CHAT": lambda e: "Chat handling will be added next.",
+    # "GENERAL_CHAT": lambda e: "Chat handling will be added next.",
     "EXIT": lambda e: "EXIT",
     "SYSTEM_STATUS": system_status_handler,
-    "GENERAL_CHAT": general_chat_handler,
+    # "GENERAL_CHAT": general_chat_handler,
+    "MEMORY_RECALL": memory_recall_handler,
 }

@@ -12,6 +12,10 @@ SEARCH              → mistral
 CODE_HELP           → deepseek-coder
 UNKNOWN             → llama3:instruct
 
+
+
+changed to plugin based architecutre
+
 for intent routing
 🧠 FRIDAY 2.0 – App Opening (Gist Notes)
 

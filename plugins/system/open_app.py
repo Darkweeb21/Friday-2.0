@@ -1,94 +1,39 @@
 # plugins/system/open_app.py
 
 import subprocess
-import os
-import shutil
-from typing import Optional, List
+from core.plugin_base import PluginBase
 
 
-KNOWN_ALIASES = {
-    "chrome": "chrome.exe",
-    "google chrome": "chrome.exe",
-    "edge": "msedge.exe",
-    "notepad": "notepad.exe",
-    "calculator": "calc.exe",
-    "cmd": "cmd.exe",
-    "powershell": "powershell.exe",
-    "vscode": "code.exe",
-    "visual studio code": "code.exe",
-    "spotify": "spotify.exe",
-}
+class OpenAppPlugin(PluginBase):
+    name = "open_app"
+    intents = ["OPEN_APP"]
 
+    permission = "system.write"
+    requires_confirmation = False
 
-SEARCH_DIRS = [
-    os.environ.get("ProgramFiles", ""),
-    os.environ.get("ProgramFiles(x86)", ""),
-    os.environ.get("LOCALAPPDATA", ""),
-]
+    def execute(self, context):
+        app = context.get("entities", {}).get("app")
 
+        if not app:
+            return {
+                "success": False,
+                "response": "Which application should I open?",
+                "data": {}
+            }
 
-def find_executable_by_name(exe_name: str) -> Optional[str]:
-    # Check PATH
-    path = shutil.which(exe_name)
-    if path:
-        return path
+        try:
+            # 🔑 This is equivalent to Win + R → typing the app name
+            subprocess.Popen(app, shell=True)
 
-    # Search common install locations
-    for base in SEARCH_DIRS:
-        if not base:
-            continue
-        for root, _, files in os.walk(base):
-            for f in files:
-                if f.lower() == exe_name.lower():
-                    return os.path.join(root, f)
+            return {
+                "success": True,
+                "response": f"Opening {app}.",
+                "data": {}
+            }
 
-    return None
-
-
-def fuzzy_find_app(app_name: str) -> List[str]:
-    """
-    Find executables loosely matching the app name.
-    """
-    matches = []
-    app_name = app_name.lower()
-
-    for base in SEARCH_DIRS:
-        if not base:
-            continue
-        for root, _, files in os.walk(base):
-            for f in files:
-                if app_name in f.lower() and f.lower().endswith(".exe"):
-                    matches.append(os.path.join(root, f))
-
-    return matches
-
-
-def open_app(app_name: str) -> str:
-    if not app_name:
-        return "No application name provided."
-
-    key = app_name.lower()
-
-    # 1️⃣ Known alias
-    exe = KNOWN_ALIASES.get(key)
-    if exe:
-        exe_path = find_executable_by_name(exe)
-        if exe_path:
-            subprocess.Popen([exe_path], shell=False)
-            return f"Opening {app_name}."
-        return f"{app_name} is not installed."
-
-    # 2️⃣ Fuzzy search
-    matches = fuzzy_find_app(key)
-
-    if len(matches) == 1:
-        subprocess.Popen([matches[0]], shell=False)
-        return f"Opening {app_name}."
-
-    if len(matches) > 1:
-        return (
-            f"I found multiple applications matching '{app_name}'. "
-            "Please be more specific."
-        )
-
-    return f"I couldn't find an installed application named '{app_name}'."
+        except Exception as e:
+            return {
+                "success": False,
+                "response": f"Failed to open {app}.",
+                "data": {"error": str(e)}
+            }
