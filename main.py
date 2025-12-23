@@ -10,8 +10,8 @@ import plugins.system.screenshot
 import plugins.system.system_status
 import plugins.system.power
 import plugins.chat.general_chat
-
-
+import plugins.productivity.reminders
+import plugins.productivity.notes
 
 def main():
     print("FRIDAY online. Debug mode enabled.")
