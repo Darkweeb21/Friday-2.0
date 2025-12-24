@@ -118,6 +118,23 @@ class IntentModel:
                 
                 "User: remove all notes\n"
                 "{ \"intent\": \"CLEAR_NOTES\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                # -------- ALARMS --------
+                "User: show alarms\n"
+                "{ \"intent\": \"SHOW_ALARMS\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: list my alarms\n"
+                "{ \"intent\": \"SHOW_ALARMS\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: delete alarm 7 am\n"
+                "{ \"intent\": \"CLEAR_ALARMS\", \"confidence\": 0.95, \"entities\": {\"time\": \"7 am\" } }\n\n"
+                
+                "User: remove alarm 6:30\n"
+                "{ \"intent\": \"CLEAR_ALARMS\", \"confidence\": 0.95, \"entities\": {\"time\": \"6:30\"} }\n\n"
+                
+                "User: clear alarms\n"
+                "{ \"intent\": \"CLEAR_ALARMS\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+
 
                 # ---------------- FALLBACK ----------------
                 "User: gibberish command\n"

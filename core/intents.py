@@ -21,6 +21,8 @@ INTENTS = {
 
     # Productivity — Alarms
     "SET_ALARM": "Create an alarm",
+    "SHOW_ALARMS": "List alarms",
+    "CLEAR_ALARMS": "Delete alarms",
 
     # Web / Code
     "WEB_SEARCH": "Search the web",

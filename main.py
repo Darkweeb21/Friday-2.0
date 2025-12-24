@@ -12,6 +12,7 @@ import plugins.system.power
 import plugins.chat.general_chat
 import plugins.productivity.reminders
 import plugins.productivity.notes
+import plugins.productivity.alarms
 
 def main():
     print("FRIDAY online. Debug mode enabled.")
