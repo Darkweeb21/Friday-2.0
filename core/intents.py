@@ -24,10 +24,7 @@ INTENTS = {
     "SHOW_ALARMS": "List alarms",
     "CLEAR_ALARMS": "Delete alarms",
 
-    # Web / Code
-    "WEB_SEARCH": "Search the web",
-    "SUMMARIZE_TEXT": "Summarize text",
-    "CODE_HELP": "Programming help",
+
 
     # Chat / Control
     "GENERAL_CHAT": "General conversation",

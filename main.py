@@ -14,6 +14,7 @@ import plugins.productivity.reminders
 import plugins.productivity.notes
 import plugins.productivity.alarms
 
+
 def main():
     print("FRIDAY online. Debug mode enabled.")
 

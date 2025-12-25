@@ -134,7 +134,13 @@ class IntentModel:
                 
                 "User: clear alarms\n"
                 "{ \"intent\": \"CLEAR_ALARMS\", \"confidence\": 0.95, \"entities\": {} }\n\n"
-
+                
+                            # ---------------- CHAT ----------------
+                "User: explain arp poisoning\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.80, \"entities\": {} }\n\n"
+    
+                "User: write python code for port scanner\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.80, \"entities\": {} }\n\n"
 
                 # ---------------- FALLBACK ----------------
                 "User: gibberish command\n"
@@ -175,8 +181,7 @@ class IntentModel:
 
         response = self.client.generate(
             model=self.model,
-            prompt=prompt,
-            temperature=0.0
+            prompt=prompt
         )
 
         return self._extract_json(response)

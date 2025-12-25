@@ -4,7 +4,6 @@ import core.state as state
 from core.memory import MemoryStore
 from core.plugin_registry import PLUGIN_REGISTRY
 
-
 memory_store = MemoryStore()
 
 TASK_INTENTS = {
@@ -48,14 +47,19 @@ def route(intent_data: dict, user_input: str) -> str:
     if intent in TASK_INTENTS and not is_confident(confidence):
         return "I'm not confident about that. Can you rephrase?"
 
-    # 🧠 Build plugin context
+    # 🧠 Plugin context
     context = {
         "text": user_input,
         "intent": intent,
         "entities": entities,
+        "confidence": confidence,
     }
 
     # 🔌 Resolve plugin
+    # Treat UNKNOWN as GENERAL_CHAT
+    if intent == "UNKNOWN":
+        intent = "GENERAL_CHAT"
+
     plugin_cls = PLUGIN_REGISTRY.get(intent) or PLUGIN_REGISTRY.get("GENERAL_CHAT")
 
     if not plugin_cls:
@@ -63,7 +67,6 @@ def route(intent_data: dict, user_input: str) -> str:
 
     plugin = plugin_cls()
     result = plugin.execute(context)
-
     response = result.get("response", "Something went wrong.")
 
     # 💾 Persist conversation
@@ -76,7 +79,7 @@ def route(intent_data: dict, user_input: str) -> str:
         state.last_entities = entities
         state.last_action = plugin
 
-    # 🧠 RAM chat memory (chat only)
+    # 🧠 RAM chat memory
     if intent in {"GENERAL_CHAT", "UNKNOWN"}:
         state.chat_history.append({"role": "user", "content": user_input})
         state.chat_history.append({"role": "assistant", "content": response})

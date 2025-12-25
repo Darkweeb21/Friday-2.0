@@ -1,53 +1,59 @@
-import requests
-import json
-import time
-from typing import Optional
+# models/ollama_client.py
+
+import ollama
+
+
+DEFAULT_SYSTEM_PROMPT = (
+    "You are FRIDAY, a professional, concise, and helpful desktop AI assistant. "
+    "You answer clearly, avoid unnecessary verbosity, and focus on being accurate. "
+    "If the user greets you, respond politely. "
+    "If the question is technical, explain it step by step. "
+    "If you are unsure, say so honestly."
+)
 
 
 class OllamaClient:
     """
-    Lightweight client for interacting with local Ollama models.
+    Real Ollama client wrapper for FRIDAY.
+    This file is the ONLY place that talks to Ollama directly.
     """
 
-    def __init__(
-        self,
-        base_url: str = "http://localhost:11434",
-        timeout: int = 120
-    ):
-        self.base_url = base_url.rstrip("/")
-        self.timeout = timeout
+    def __init__(self, system_prompt: str | None = None):
+        self.system_prompt = system_prompt or DEFAULT_SYSTEM_PROMPT
 
-    def generate(
-        self,
-        model: str,
-        prompt: str,
-        temperature: float = 0.2,
-        system_prompt: Optional[str] = None,
-    ) -> str:
-        payload = {
-            "model": model,
-            "prompt": prompt,
-            "temperature": temperature,
-            "stream": False,
-        }
+    def chat(self, model: str, messages: list) -> str:
+        """
+        Chat-style interaction with context.
+        Automatically injects a system prompt.
+        """
 
-        if system_prompt:
-            payload["system"] = system_prompt
+        # Inject system message at the beginning if not present
+        if not messages or messages[0].get("role") != "system":
+            messages = [{"role": "system", "content": self.system_prompt}] + messages
 
-        try:
-            response = requests.post(
-                f"{self.base_url}/api/generate",
-                json=payload,
-                timeout=self.timeout,
-            )
+        response = ollama.chat(
+            model=model,
+            messages=messages,
+            options={
+                "num_ctx": 4096
+            }
+        )
 
-            response.raise_for_status()
-            data = response.json()
-            return data.get("response", "").strip()
+        return response["message"]["content"]
 
-        except requests.exceptions.RequestException as e:
-            raise RuntimeError(f"Ollama request failed: {e}")
+    def generate(self, model: str, prompt: str) -> str:
+        """
+        Single-shot generation (used for intent classification & web summary).
+        """
 
-        except json.JSONDecodeError:
-            raise RuntimeError("Invalid JSON response from Ollama")
+        full_prompt = f"{self.system_prompt}\n\n{prompt}"
 
+        response = ollama.generate(
+            model=model,
+            prompt=full_prompt,
+            options={
+                "num_ctx": 4096
+            }
+        )
+
+        return response["response"]
