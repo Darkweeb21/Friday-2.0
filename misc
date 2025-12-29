@@ -16,41 +16,85 @@ UNKNOWN             → llama3:instruct
 
 changed to plugin based architecutre
 
-for intent routing
-🧠 FRIDAY 2.0 – App Opening (Gist Notes)
+┌───────────────────────┐
+│        USER           │
+│  (text / voice input) │
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│   INTENT / MODE       │
+│   DETECTION           │
+│  (general / code /    │
+│   search / command)   │
+└───────────┬───────────┘
+            │
+            ▼
+┌────────────────────────────────────────┐
+│              CHAT ROUTER                │
+│          (ChatModel)                    │
+│                                        │
+│  • Chooses model                        │
+│  • Chooses tool                         │
+│  • Controls context                     │
+└───────────┬────────────────────────────┘
+            │
+            │  (Memory Layer lives here)
+            ▼
+┌────────────────────────────────────────┐
+│            MEMORY LAYER                 │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │ Raw Conversation Store            │  │
+│  │ (SQLite - conversations table)   │  │
+│  └───────────────┬──────────────────┘  │
+│                  │                     │
+│                  ▼                     │
+│  ┌──────────────────────────────────┐  │
+│  │ Rolling Summary Brain             │  │
+│  │ (llama3:instruct)                 │  │
+│  │                                  │  │
+│  │  • Compresses old turns           │  │
+│  │  • Preserves goals & context      │  │
+│  │  • Deletes safely                 │  │
+│  └───────────────┬──────────────────┘  │
+│                  │                     │
+│                  ▼                     │
+│  ┌──────────────────────────────────┐  │
+│  │ Context Assembler                 │  │
+│  │                                  │  │
+│  │  System Prompt                    │  │
+│  │  + Conversation Summary           │  │
+│  │  + Recent Turns (last N)          │  │
+│  └──────────────────────────────────┘  │
+└───────────┬────────────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│      MODEL CALL       │
+│  (phi3 / llama3 /     │
+│   code / tools)       │
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│    RESPONSE OUTPUT    │
+│                                        │
+│  • User sees reply                     │
+│  • Assistant stores response           │
+└───────────────────────┘
 
-Built intent-based automation using a local LLM (phi3:mini)
 
-User input → intent + confidence + entities (e.g., app name)
-
-Routing only happens if confidence is high (safety gate)
-
-App opening logic (3 layers):
-
-Known aliases (fast & safe)
-chrome → chrome.exe, vscode → code.exe, etc.
-
-Fuzzy discovery
-Searches common install folders and opens app only if one clear match exists.
-
-Microsoft Store apps support
-Needed for apps like WhatsApp (not normal .exe).
-Launched via explorer.exe shell:AppsFolder\<AppID>.
-
-
-
-Right now, FRIDAY has:
-
-System control (apps, volume, power, screenshots)
-
-System status (CPU, RAM, GPU, battery, specs)
-
-Confirmation layer (safe destructive actions)
-
-Context actions (repeat / confirm / cancel)
-
-Normal conversation fallback
-
-Clean modular architecture
-
-That’s a strong, stable baseline.
+User Message
+   ↓
+Stored in Memory
+   ↓
+(If long) → Summarize
+   ↓
+Summary Updated
+   ↓
+Recent Context Built
+   ↓
+Model Responds
+   ↓
+Response Stored

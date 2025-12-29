@@ -16,6 +16,21 @@ TASK_INTENTS = {
 }
 
 
+def is_question(text: str) -> bool:
+    """
+    Generic question detector.
+    MEMORY_RECALL must ONLY trigger on questions.
+    """
+    question_starters = (
+        "what", "when", "who", "where", "why", "how",
+        "do i", "am i", "is my", "tell me", "show me",
+    )
+    return (
+        "?" in text
+        or any(text.startswith(q) for q in question_starters)
+    )
+
+
 def route(intent_data: dict, user_input: str) -> str:
     intent = intent_data.get("intent")
     confidence = intent_data.get("confidence", 0.0)
@@ -25,14 +40,39 @@ def route(intent_data: dict, user_input: str) -> str:
     print(f"[DEBUG] Confidence: {confidence}")
     print(f"[DEBUG] Entities: {entities}")
 
-    # 🔐 Confirmation layer
+    text_lower = user_input.lower().strip()
+
+    # =========================================================
+    # 🧠 MEMORY RECALL — QUESTIONS ONLY (GENERIC)
+    # =========================================================
+    # =========================================================
+    # 🧠 MEMORY RECALL — ANY PERSONAL QUESTION
+    # =========================================================
+    if is_question(text_lower):
+        personal_markers = ("my ", "me ", "about me", "it ")
+
+        if any(p in text_lower for p in personal_markers):
+            intent = "MEMORY_RECALL"
+
+    # =========================================================
+    # 🧠 FACT INGESTION — STATEMENTS NEVER TRIGGER RECALL
+    # =========================================================
+    if not is_question(text_lower):
+        if intent == "MEMORY_RECALL":
+            intent = "GENERAL_CHAT"
+
+    # =========================================================
+    # 🔐 CONFIRMATION LAYER
+    # =========================================================
     if intent == "CONFIRM":
         return confirmation_manager.confirm()
 
     if intent == "CANCEL":
         return confirmation_manager.cancel()
 
-    # 🔁 Repeat last action
+    # =========================================================
+    # 🔁 REPEAT LAST ACTION
+    # =========================================================
     if intent == "REPEAT":
         if state.last_action:
             result = state.last_action.execute({
@@ -43,11 +83,15 @@ def route(intent_data: dict, user_input: str) -> str:
             return result.get("response", "Failed to repeat last action.")
         return "Nothing to repeat."
 
-    # 🚫 Confidence gate for task intents
+    # =========================================================
+    # 🚫 CONFIDENCE GATE FOR TASK INTENTS
+    # =========================================================
     if intent in TASK_INTENTS and not is_confident(confidence):
         return "I'm not confident about that. Can you rephrase?"
 
-    # 🧠 Plugin context
+    # =========================================================
+    # 🧠 PLUGIN CONTEXT
+    # =========================================================
     context = {
         "text": user_input,
         "intent": intent,
@@ -55,9 +99,10 @@ def route(intent_data: dict, user_input: str) -> str:
         "confidence": confidence,
     }
 
-    # 🔌 Resolve plugin
-    # Treat UNKNOWN as GENERAL_CHAT
-    if intent == "UNKNOWN":
+    # =========================================================
+    # 🔌 PLUGIN RESOLUTION
+    # =========================================================
+    if intent == "UNKNOWN" and intent != "MEMORY_RECALL":
         intent = "GENERAL_CHAT"
 
     plugin_cls = PLUGIN_REGISTRY.get(intent) or PLUGIN_REGISTRY.get("GENERAL_CHAT")
@@ -69,20 +114,18 @@ def route(intent_data: dict, user_input: str) -> str:
     result = plugin.execute(context)
     response = result.get("response", "Something went wrong.")
 
-    # 💾 Persist conversation
+    # =========================================================
+    # 💾 PERSIST CONVERSATION
+    # =========================================================
     memory_store.store(SESSION_ID, "user", intent, user_input)
     memory_store.store(SESSION_ID, "assistant", intent, response)
 
-    # 🧠 Save last action (non-chat)
-    if intent not in {"GENERAL_CHAT", "CONFIRM", "CANCEL"}:
+    # =========================================================
+    # 🧠 SAVE LAST ACTION (NON-CHAT)
+    # =========================================================
+    if intent not in {"GENERAL_CHAT", "CONFIRM", "CANCEL", "MEMORY_RECALL"}:
         state.last_intent = intent
         state.last_entities = entities
         state.last_action = plugin
-
-    # 🧠 RAM chat memory
-    if intent in {"GENERAL_CHAT", "UNKNOWN"}:
-        state.chat_history.append({"role": "user", "content": user_input})
-        state.chat_history.append({"role": "assistant", "content": response})
-        state.chat_history = state.chat_history[-state.CHAT_MEMORY_LIMIT:]
 
     return response
