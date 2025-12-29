@@ -1,5 +1,5 @@
 # plugins/system/power_control.py
-# used for system piwer suc h as shutdown restart etc
+
 import os
 from core.plugin_base import PluginBase
 from core.state import confirmation_manager
@@ -16,22 +16,37 @@ class PowerControlPlugin(PluginBase):
         action = context.get("entities", {}).get("action")
 
         if action == "lock":
-            return confirmation_manager.set(
+            confirmation_manager.set(
                 lambda: os.system("rundll32.exe user32.dll,LockWorkStation"),
                 "Are you sure you want to lock the system?"
             )
+            return {
+                "success": True,
+                "response": "Please confirm to lock the system.",
+                "data": {}
+            }
 
         if action == "shutdown":
-            return confirmation_manager.set(
+            confirmation_manager.set(
                 lambda: os.system("shutdown /s /t 5"),
                 "Are you sure you want to shut down the system?"
             )
+            return {
+                "success": True,
+                "response": "Please confirm to shut down the system.",
+                "data": {}
+            }
 
         if action == "restart":
-            return confirmation_manager.set(
+            confirmation_manager.set(
                 lambda: os.system("shutdown /r /t 5"),
                 "Are you sure you want to restart the system?"
             )
+            return {
+                "success": True,
+                "response": "Please confirm to restart the system.",
+                "data": {}
+            }
 
         return {
             "success": False,
