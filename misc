@@ -1,10 +1,6 @@
-Perfect — below is the **final, clean table** with **ONE LINE explaining what each file is used for**, plus the **technologies used**.
 
-This is **report-ready, README-ready, and college-friendly**.
 
----
 
-## 📊 FRIDAY 2.0 Backend — Files, Purpose & Technologies
 
 | File / Module                       | Used For (One Line)                                                            | Technologies / Tools Used                     |
 | ----------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------- |
@@ -34,7 +30,7 @@ This is **report-ready, README-ready, and college-friendly**.
 
 ---
 
-## 🧰 Overall Technologies Used
+## overall Technologies Used
 
 | Category                   | Technologies                |
 | -------------------------- | --------------------------- |
@@ -48,23 +44,7 @@ This is **report-ready, README-ready, and college-friendly**.
 | Concurrency                | threading, queue            |
 | Architecture               | Plugin-based modular design |
 
----
 
-### ✅ This version is:
-
-* Clear
-* Technical
-* Non-AI sounding
-* Perfect for **college reports**, **GitHub**, and **documentation**
-
-If you want next, I can:
-
-* Convert this into **PDF / DOC format**
-* Shorten it for **project synopsis**
-* Add **architecture diagram explanation**
-* Create **viva/defense explanation points**
-
-Just tell me.
 
 
 
