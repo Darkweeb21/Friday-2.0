@@ -54,7 +54,7 @@ class MemoryRecallPlugin(PluginBase):
         # Convert to dict for easy lookup
         fact_map = {f["key"]: f["value"] for f in facts}
 
-        # 🎯 Specific questions
+        # Specific questions
         if "name" in text:
             name = fact_map.get("user_name")
             if name:
@@ -81,7 +81,7 @@ class MemoryRecallPlugin(PluginBase):
 
             return self._reply("I don’t have details about your project saved yet.")
 
-        # 🧠 Generic recall
+        #  Generic recall
         lines = []
         for k, v in fact_map.items():
             label = k.replace("_", " ").capitalize()

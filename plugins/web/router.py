@@ -58,7 +58,7 @@ REALTIME_KEYWORDS = {
 def needs_web_search(query: str, confidence: float) -> bool:
     q = query.lower().strip()
 
-    # 🛑 NEVER web-search greetings or casual chat
+    #  NEVER web-search greetings or casual chat
     casual = {
         "hi", "hello", "hey",
         "hi friday", "hello friday", "hey friday",
@@ -67,11 +67,11 @@ def needs_web_search(query: str, confidence: float) -> bool:
     if q in casual:
         return False
 
-    # 🔍 Explicit real-time / factual keywords
+    #  Explicit real-time / factual keywords
     if any(k in q for k in REALTIME_KEYWORDS):
         return True
 
-    # 🔢 Numbers usually imply dynamic data
+    #  Numbers usually imply dynamic data
     if any(c.isdigit() for c in q):
         return True
 

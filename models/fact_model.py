@@ -113,16 +113,16 @@ class FactModel:
             if not key or not value:
                 continue
 
-            # 🔒 Guard: preferences/notes require explicit approval
+            # preferences/notes require explicit approval
             if key in ("user_preference", "user_note") and not explicit_memory:
                 continue
 
-            # 🔒 Guard: do not overwrite identical facts
+            # do not overwrite identical facts
             existing = self.memory.get_fact(key)
             if existing and existing == value:
                 continue
 
-            # ✅ Save fact
+            # Save fact
             try:
                 self.memory.save_fact(
                     key=key,

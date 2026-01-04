@@ -87,7 +87,7 @@ class NotesPlugin(PluginBase):
             "data": {}
         }
 
-    # ✅ THIS METHOD IS MANDATORY
+    #  THIS METHOD IS MANDATORY
     def execute(self, context):
         intent = context.get("intent")
         entities = context.get("entities", {})
@@ -188,7 +188,7 @@ class NotesPlugin(PluginBase):
                     "data": {}
                 }
 
-            # ✅ THIS METHOD IS MANDATORY
+            #  THIS METHOD IS MANDATORY
             def execute(self, context):
                 intent = context.get("intent")
                 entities = context.get("entities", {})

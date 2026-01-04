@@ -19,7 +19,7 @@ class VolumePlugin(PluginBase):
     requires_confirmation = False
 
     def _get_volume_interface(self):
-        # 🔑 REQUIRED for FastAPI / threaded execution
+        #  REQUIRED for FastAPI / threaded execution
         comtypes.CoInitialize()
 
         devices = AudioUtilities.GetSpeakers()
@@ -57,7 +57,7 @@ class VolumePlugin(PluginBase):
 
         volume = self._get_volume_interface()
 
-        # 🔇 Mute / Unmute
+        #  Mute / Unmute
         if action == "mute":
             volume.SetMute(1, None)
             return {"success": True, "response": "Volume muted.", "data": {}}
@@ -66,7 +66,7 @@ class VolumePlugin(PluginBase):
             volume.SetMute(0, None)
             return {"success": True, "response": "Volume unmuted.", "data": {}}
 
-        # 🎯 Absolute set (Alexa-style)
+        # Absolute set (Alexa-style)
         if action == "set" and isinstance(level, int):
             return {
                 "success": True,
@@ -74,7 +74,7 @@ class VolumePlugin(PluginBase):
                 "data": {"level": level}
             }
 
-        # 🔼 Relative increase / decrease
+        # Relative increase / decrease
         if action == "increase":
             return {
                 "success": True,

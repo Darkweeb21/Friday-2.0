@@ -24,9 +24,9 @@ class ChatModel:
         user_text = messages[-1]["content"]
         token_estimate = len(user_text.split())
 
-        # -----------------------------
+
         # Store user message
-        # -----------------------------
+
         self.memory.store(
             session_id=self.session_id,
             role="user",
@@ -34,20 +34,18 @@ class ChatModel:
             content=user_text
         )
 
-        # -----------------------------
+
         # 🧠 Extract FACTS (background)
-        # -----------------------------
         self.fact_model.extract_and_store(user_text)
 
-        # -----------------------------
         # Trigger summarization if needed
-        # -----------------------------
+
         if self.summary_model.should_summarize(self.session_id):
             self.summary_model.summarize(self.session_id)
 
-        # -----------------------------
+
         # Build context with memory
-        # -----------------------------
+
         chat_messages = []
         chat_messages.extend(system_messages)
 
@@ -62,7 +60,7 @@ class ChatModel:
                 "content": f"Known facts about the user:\n{facts_text}"
             })
 
-        # 🧠 Inject conversation summary as SYSTEM
+        # Inject conversation summary as SYSTEM
         summary = self.memory.get_summary(self.session_id)
         if summary and len(user_text.split()) > 3:
             chat_messages.append({
@@ -70,7 +68,7 @@ class ChatModel:
                 "content": f"Conversation summary (context only):\n{summary}"
             })
 
-        # 🔄 Inject recent conversation
+        #  Inject recent conversation
         recent = self.memory.get_recent(self.session_id)
         for role, content in recent:
             chat_messages.append({
@@ -78,24 +76,23 @@ class ChatModel:
                 "content": content
             })
 
-        # -----------------------------
+
         # Code queries
-        # -----------------------------
+
         if mode == "code":
             response = self.code_model.generate(user_text)
 
-        # -----------------------------
         # Unknown fallback
-        # -----------------------------
+
         elif mode == "unknown":
             response = self.client.chat(
                 model="llama3:instruct",
                 messages=chat_messages
             )
 
-        # -----------------------------
+
         # General chat
-        # -----------------------------
+
         else:
             model = "phi3:mini" if token_estimate < 60 else "llama3:instruct"
             response = self.client.chat(
@@ -103,9 +100,9 @@ class ChatModel:
                 messages=chat_messages
             )
 
-        # -----------------------------
+
         # Store assistant reply
-        # -----------------------------
+
         self.memory.store(
             session_id=self.session_id,
             role="assistant",

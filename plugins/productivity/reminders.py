@@ -114,7 +114,7 @@ class RemindersPlugin(PluginBase):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # 🔹 Delete a specific reminder
+        #  Delete a specific reminder
         if item:
             cursor.execute(
                 "DELETE FROM reminders WHERE content LIKE ?",
@@ -129,7 +129,7 @@ class RemindersPlugin(PluginBase):
                 "data": {}
             }
 
-        # 🔹 Delete all reminders
+        #  Delete all reminders
         cursor.execute("DELETE FROM reminders")
         conn.commit()
         conn.close()

@@ -32,7 +32,7 @@ class SummaryModel:
     def summarize(self, session_id, keep_last_n=6):
         messages = self.memory.get_all_messages(session_id)
 
-        # ✅ ONLY summarize chat-related intents
+        #  ONLY summarize chat-related intents
         chat_messages = [
             m for m in messages
             if m["intent"] in ("GENERAL_CHAT", "UNKNOWN", None)

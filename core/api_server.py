@@ -12,9 +12,8 @@ app = FastAPI()
 intent_model = IntentModel()
 
 
-# ======================================================
-# 📩 COMMAND API (UNCHANGED)
-# ======================================================
+
+# 📩 COMMAND API
 
 class CommandRequest(BaseModel):
     text: str
@@ -40,10 +39,7 @@ def process_command(req: CommandRequest):
     }
 
 
-# ======================================================
-# 🎛️ VOICE STATE API (NEW)
-# ======================================================
-
+# 🎛VOICE STATE API
 @app.get("/api/state")
 def get_state():
     return {
@@ -54,10 +50,7 @@ def get_state():
     }
 
 
-# ======================================================
-# 🎤 MICROPHONE CONTROL API (NEW)
-# ======================================================
-
+# MICROPHONE CONTROL API
 class MicRequest(BaseModel):
     enabled: bool
 
@@ -71,9 +64,9 @@ def set_mic(req: MicRequest):
     }
 
 
-# ======================================================
-# 🔊 SPEECH (TTS) CONTROL API (NEW)
-# ======================================================
+
+ # SPEECH (TTS) CONTROL API (NEW)
+
 
 class SpeechRequest(BaseModel):
     enabled: bool
@@ -87,9 +80,9 @@ def set_speech(req: SpeechRequest):
         "speech_enabled": state.speech_enabled
     }
 
-# ======================================================
-# 🔁 TOGGLE MICROPHONE
-# ======================================================
+
+#TOGGLE MICROPHONE
+
 
 @app.post("/api/mic/toggle")
 def toggle_mic():
@@ -100,9 +93,8 @@ def toggle_mic():
     }
 
 
-# ======================================================
-# 🔁 TOGGLE SPEECH (TTS)
-# ======================================================
+# TOGGLE SPEECH (TTS)
+
 
 @app.post("/api/speech/toggle")
 def toggle_speech():

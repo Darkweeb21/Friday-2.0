@@ -22,18 +22,17 @@ class GeneralChatPlugin(PluginBase):
 
         llm = ChatModel()
 
-        # =====================================================
-        # 🧠 FACT INGESTION (SILENT, NON-BLOCKING)
-        # =====================================================
+
+        # FACT INGESTION (SILENT, NON-BLOCKING)
+
         try:
             fact_extractor = FactModel(llm.memory)
             fact_extractor.extract_and_store(user_input)
         except Exception:
             pass
 
-        # =====================================================
-        # 🧠 CONTROLLED CHAT FLOW (FIXED)
-        # =====================================================
+        # CONTROLLED CHAT FLOW (FIXED)
+
         response = llm.chat([
             {
                 "role": "system",

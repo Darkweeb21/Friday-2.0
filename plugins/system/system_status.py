@@ -4,7 +4,7 @@ import psutil
 import datetime
 from core.plugin_base import PluginBase
 
-# 🔹 Optional GPU support (safe import)
+# Optional GPU support (safe import)
 try:
     import GPUtil
 except ImportError:
