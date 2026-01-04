@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
-import { VoiceControl } from './components/VoiceControl';
-import { ConversationDisplay } from './components/ConversationDisplay';
-import { MessageInput } from './components/MessageInput';
-import { DebugPanel } from './components/DebugPanel';
+import { useState, useEffect } from "react";
+import { VoiceControl } from "./components/VoiceControl";
+import { ConversationDisplay } from "./components/ConversationDisplay";
+import { MessageInput } from "./components/MessageInput";
+import { DebugPanel } from "./components/DebugPanel";
+
+import {
+  sendCommand,
+  getState,
+  toggleMic,
+  toggleSpeech,
+} from "../api/friday";
 
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'assistant';
+  sender: "user" | "assistant";
   timestamp: Date;
 }
 
@@ -22,109 +29,123 @@ export default function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [debugData, setDebugData] = useState<DebugData>({
-    intent: '',
+    intent: "",
     confidence: 0,
     entities: {},
   });
-  const [orbState, setOrbState] = useState<'idle' | 'listening' | 'speaking' | 'typing' | 'pulse'>('idle');
+
+  const [orbState, setOrbState] = useState<
+    "idle" | "listening" | "speaking" | "typing" | "pulse"
+  >("idle");
+
   const [isTyping, setIsTyping] = useState(false);
   const [isResponding, setIsResponding] = useState(false);
 
-  // Update orb state based on conditions
+  // ----------------------------------------
+  // 🔁 Sync backend voice state on load
+  // ----------------------------------------
   useEffect(() => {
-    // Priority order: typing > responding > mic > voice > idle
+    getState().then((state) => {
+      setMicEnabled(state.mic_enabled);
+      setVoiceEnabled(state.speech_enabled);
+    });
+  }, []);
+
+  // ----------------------------------------
+  // 🧠 Orb state logic (priority-based)
+  // ----------------------------------------
+  useEffect(() => {
     if (isTyping) {
-      setOrbState('typing');
+      setOrbState("typing");
     } else if (isResponding) {
-      setOrbState('speaking');
+      setOrbState("speaking");
     } else if (micEnabled) {
-      setOrbState('listening');
+      setOrbState("listening");
     } else if (voiceEnabled) {
-      setOrbState('speaking');
+      setOrbState("speaking");
     } else {
-      setOrbState('idle');
+      setOrbState("idle");
     }
   }, [isTyping, isResponding, micEnabled, voiceEnabled]);
 
-  // Handle typing state change from input
+  // ----------------------------------------
+  // 🎙️ Remote Mic Toggle (API)
+  // ----------------------------------------
+  const handleMicToggle = async () => {
+    const res = await toggleMic();
+    setMicEnabled(res.mic_enabled);
+  };
+
+  // ----------------------------------------
+  // 🔊 Remote Speech Toggle (API)
+  // ----------------------------------------
+  const handleVoiceToggle = async () => {
+    const res = await toggleSpeech();
+    setVoiceEnabled(res.speech_enabled);
+  };
+
+  // ----------------------------------------
+  // ⌨️ Typing state from input
+  // ----------------------------------------
   const handleTypingChange = (typing: boolean) => {
     setIsTyping(typing);
   };
 
-  // Simulate processing a user message and extracting debug data
-  const processMessage = (text: string) => {
-    // Mock intent extraction
-    const lowerText = text.toLowerCase();
-    let intent = 'general.query';
-    let confidence = 0.75;
-    const entities: Record<string, string> = {};
-
-    if (lowerText.includes('weather')) {
-      intent = 'weather.query';
-      confidence = 0.92;
-      entities.location = 'current';
-    } else if (lowerText.includes('time') || lowerText.includes('clock')) {
-      intent = 'time.query';
-      confidence = 0.88;
-    } else if (lowerText.includes('reminder') || lowerText.includes('remind')) {
-      intent = 'reminder.create';
-      confidence = 0.85;
-      entities.action = 'create';
-    } else if (lowerText.includes('hello') || lowerText.includes('hi')) {
-      intent = 'greeting';
-      confidence = 0.95;
-    }
-
-    setDebugData({ intent, confidence, entities });
-  };
-
-  const handleSendMessage = (text: string) => {
-    const newMessage: Message = {
+  // ----------------------------------------
+  // 📤 Send message → backend
+  // ----------------------------------------
+  const handleSendMessage = async (text: string) => {
+    const userMessage: Message = {
       id: Date.now().toString(),
       text,
-      sender: 'user',
+      sender: "user",
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, newMessage]);
 
-    // Process message for debug data
-    processMessage(text);
+    setMessages((prev) => [...prev, userMessage]);
+    setIsResponding(true);
 
-    // Trigger pulse animation on message send
-    setOrbState('pulse');
-    
-    // After pulse, set to responding state
-    setTimeout(() => {
-      setIsResponding(true);
-      
-      // Simulate FRIDAY response
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: 'Command received. This is a demo response from FRIDAY 2.0.',
-          sender: 'assistant',
+    try {
+      const res = await sendCommand(text);
+
+      // Debug panel (REAL backend data)
+      setDebugData({
+        intent: res.intent,
+        confidence: res.confidence,
+        entities: res.entities || {},
+      });
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: res.reply,
+        sender: "assistant",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text: "Backend error. Please check server.",
+          sender: "assistant",
           timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-        
-        // Stop responding after message is complete
-        setTimeout(() => {
-          setIsResponding(false);
-        }, 2000);
-      }, 800);
-    }, 1200); // Duration of pulse animation
+        },
+      ]);
+    } finally {
+      setIsResponding(false);
+    }
   };
 
   const isActive = micEnabled || voiceEnabled;
 
+  // ----------------------------------------
+  // 🖥️ UI
+  // ----------------------------------------
   return (
     <div className="min-h-screen w-full bg-black flex justify-center">
-
-
-
-    <div className="w-full min-h-screen flex flex-col bg-zinc-950 overflow-hidden">
-
-
+      <div className="w-full h-screen flex flex-col bg-zinc-950 overflow-hidden">
 
 
         {/* Header */}
@@ -134,7 +155,9 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <div
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    isActive ? 'bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse' : 'bg-zinc-700'
+                    isActive
+                      ? "bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse"
+                      : "bg-zinc-700"
                   }`}
                 />
                 <h1 className="text-zinc-100 tracking-wide">FRIDAY 2.0</h1>
@@ -143,33 +166,30 @@ export default function App() {
             <div className="flex items-center gap-4 text-xs text-zinc-600">
               <span className="font-mono">v2.0.1</span>
               <span>|</span>
-              <span className={isActive ? 'text-blue-400' : ''}>
-                {isActive ? 'ACTIVE' : 'STANDBY'}
+              <span className={isActive ? "text-blue-400" : ""}>
+                {isActive ? "ACTIVE" : "STANDBY"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Main Conversation Area with AI Core Orb */}
+        {/* Conversation + Orb */}
         <ConversationDisplay messages={messages} orbState={orbState} />
 
-        {/* Bottom Section: Controls + Input */}
+        {/* Controls + Input */}
         <div className="border-t border-zinc-900 bg-zinc-950">
           <div className="px-6 py-4 flex items-center gap-6">
-            {/* Control Panel */}
             <VoiceControl
               micEnabled={micEnabled}
               voiceEnabled={voiceEnabled}
-              onMicToggle={() => setMicEnabled(!micEnabled)}
-              onVoiceToggle={() => setVoiceEnabled(!voiceEnabled)}
+              onMicToggle={handleMicToggle}
+              onVoiceToggle={handleVoiceToggle}
             />
 
-            {/* Divider */}
             <div className="h-8 w-px bg-zinc-800" />
 
-            {/* Input Section */}
             <div className="flex-1">
-              <MessageInput 
+              <MessageInput
                 onSend={handleSendMessage}
                 onTypingChange={handleTypingChange}
               />
@@ -177,7 +197,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Debug Panel */}
+        {/* Debug */}
         <DebugPanel data={debugData} />
       </div>
     </div>
