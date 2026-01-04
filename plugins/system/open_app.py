@@ -3,6 +3,7 @@
 import subprocess
 import json
 from core.plugin_base import PluginBase
+from core import state
 
 
 class OpenAppPlugin(PluginBase):
@@ -13,7 +14,12 @@ class OpenAppPlugin(PluginBase):
     requires_confirmation = False
 
     def execute(self, context):
+        # 1️⃣ Try explicit entity first
         app = context.get("entities", {}).get("app")
+
+        # 2️⃣ Fallback to short-term memory
+        if not app and state.last_entities:
+            app = state.last_entities.get("app")
 
         if not app:
             return {
@@ -23,7 +29,7 @@ class OpenAppPlugin(PluginBase):
             }
 
         try:
-            # 1️⃣ Query Windows Start Menu apps
+            # 🔍 Query Windows Start Menu apps
             ps_command = (
                 "Get-StartApps | "
                 f"Where-Object {{$_.Name -match '{app}'}} | "
@@ -41,7 +47,7 @@ class OpenAppPlugin(PluginBase):
 
             app_id = json.loads(result)["AppID"]
 
-            # 2️⃣ Launch via AppsFolder
+            # 🚀 Launch via AppsFolder
             subprocess.Popen(
                 ["explorer.exe", f"shell:AppsFolder\\{app_id}"],
                 shell=False
@@ -50,7 +56,7 @@ class OpenAppPlugin(PluginBase):
             return {
                 "success": True,
                 "response": f"Opening {app}.",
-                "data": {"app_id": app_id}
+                "data": {"app": app, "app_id": app_id}
             }
 
         except Exception as e:

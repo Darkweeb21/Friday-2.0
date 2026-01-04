@@ -2,6 +2,7 @@
 
 import subprocess
 from core.plugin_base import PluginBase
+from core import state
 
 
 class CloseAppPlugin(PluginBase):
@@ -12,7 +13,12 @@ class CloseAppPlugin(PluginBase):
     requires_confirmation = False
 
     def execute(self, context):
+        # 1️⃣ Try explicit entity first
         app = context.get("entities", {}).get("app")
+
+        # 2️⃣ Fallback to short-term memory (contextual command)
+        if not app and state.last_entities:
+            app = state.last_entities.get("app")
 
         if not app:
             return {
@@ -33,13 +39,13 @@ class CloseAppPlugin(PluginBase):
                 return {
                     "success": True,
                     "response": f"Closed {app}.",
-                    "data": {}
+                    "data": {"app": app}
                 }
 
             return {
                 "success": False,
                 "response": f"{app} is not running.",
-                "data": {}
+                "data": {"app": app}
             }
 
         except Exception as e:

@@ -9,6 +9,10 @@ INTENTS = {
     "SCREENSHOT": "Take a screenshot",
     "POWER_CONTROL": "Lock, shutdown, or restart system",
 
+    # System — Voice Control
+    "TOGGLE_MIC": "Enable or disable microphone input",
+    "TOGGLE_SPEECH": "Enable or disable speech output",
+
     # Productivity — Reminders
     "SET_REMINDER": "Create a reminder",
     "SHOW_REMINDERS": "List reminders",

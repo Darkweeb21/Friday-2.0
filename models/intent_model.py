@@ -141,6 +141,44 @@ class IntentModel:
     
                 "User: write python code for port scanner\n"
                 "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.80, \"entities\": {} }\n\n"
+                
+                                # -------- VOICE CONTROL --------
+                "User: mute microphone\n"
+                "{ \"intent\": \"TOGGLE_MIC\", \"confidence\": 0.95, \"entities\": {\"state\": \"off\"} }\n\n"
+                
+                "User: turn off mic\n"
+                "{ \"intent\": \"TOGGLE_MIC\", \"confidence\": 0.95, \"entities\": {\"state\": \"off\"} }\n\n"
+                
+                "User: enable microphone\n"
+                "{ \"intent\": \"TOGGLE_MIC\", \"confidence\": 0.95, \"entities\": {\"state\": \"on\"} }\n\n"
+                
+                "User: mute voice\n"
+                "{ \"intent\": \"TOGGLE_SPEECH\", \"confidence\": 0.95, \"entities\": {\"state\": \"off\"} }\n\n"
+                
+                "User: stop speaking\n"
+                "{ \"intent\": \"TOGGLE_SPEECH\", \"confidence\": 0.95, \"entities\": {\"state\": \"off\"} }\n\n"
+                
+                "User: enable speech output\n"
+                "{ \"intent\": \"TOGGLE_SPEECH\", \"confidence\": 0.95, \"entities\": {\"state\": \"on\"} }\n\n"
+
+                                # -------- CONTEXTUAL APP CONTROL --------
+                "User: close it\n"
+                "{ \"intent\": \"CLOSE_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+
+                "User: close that\n"
+                "{ \"intent\": \"CLOSE_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+
+                "User: close the previous app\n"
+                "{ \"intent\": \"CLOSE_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+
+                "User: open it again\n"
+                "{ \"intent\": \"OPEN_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+
+                "User: open that again\n"
+                "{ \"intent\": \"OPEN_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+
+                "User: reopen the last app\n"
+                "{ \"intent\": \"OPEN_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
 
                 # ---------------- FALLBACK ----------------
                 "User: gibberish command\n"
@@ -152,11 +190,14 @@ class IntentModel:
                 "- confidence must be between 0 and 1\n"
                 "- Extract entities when relevant (app, action, level, item)\n"
                 "- If the user input contains the word \"reminder\", NEVER return UNKNOWN\n"
-                "- If the user input contains the word \"note\", NEVER return UNKNOWN\n\n"
+                "- If the user input contains the word \"note\", NEVER return UNKNOWN\n"
+                "- If the user input contains \"close it\" or \"close that\", NEVER return CANCEL\n"
+                "- If the user input contains \"again\" and refers to an action, NEVER return GENERAL_CHAT\n\n"
 
                 "User input:\n"
                 "{user_input}\n\n"
                 "Respond ONLY with JSON:"
+
         )
 
     def _extract_json(self, text: str) -> dict:

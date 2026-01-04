@@ -1,3 +1,14 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+html,
+body,
+#root {
+  min-height: 100%;
+  background-color: #000000;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
