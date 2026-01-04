@@ -1,100 +1,72 @@
-User Input
-   ↓
-phi3:mini (Intent Classifier)
-   ↓
-────────────────────────────
-OPEN_APP           → System Plugin (NO LLM)
-VOLUME_CONTROL     → System Plugin
-SYSTEM_STATUS      → System Plugin
-GENERAL_CHAT(short)→ phi3
-GENERAL_CHAT(long) → llama3:instruct
-SEARCH              → mistral
-CODE_HELP           → deepseek-coder
-UNKNOWN             → llama3:instruct
+Perfect — below is the **final, clean table** with **ONE LINE explaining what each file is used for**, plus the **technologies used**.
+
+This is **report-ready, README-ready, and college-friendly**.
+
+---
+
+## 📊 FRIDAY 2.0 Backend — Files, Purpose & Technologies
+
+| File / Module                       | Used For (One Line)                                                            | Technologies / Tools Used                     |
+| ----------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------- |
+| `main.py`                           | Main execution loop coordinating input, intent processing, plugins, and output | Python, plugin architecture, state management |
+| `core/state.py`                     | Stores global assistant state and short-term memory                            | Python globals, session state                 |
+| `core/router.py`                    | Routes classified intents to the appropriate plugin                            | Python dictionaries, dynamic dispatch         |
+| `core/plugin_base.py`               | Defines a common structure for all plugins                                     | Python OOP (inheritance, base classes)        |
+| `core/intents.py`                   | Maintains a centralized list of supported intents                              | Python dictionaries                           |
+| `core/confirmation.py`              | Handles user confirmation for sensitive actions                                | Stateful logic                                |
+| `input/text.py`                     | Accepts text input when microphone is disabled or unavailable                  | Python standard input                         |
+| `input/voice.py`                    | Converts spoken input to text offline                                          | Whisper, sounddevice, ffmpeg, NumPy, SciPy    |
+| `output/console.py`                 | Displays assistant responses and forwards them to speech output                | Python print                                  |
+| `output/speech.py`                  | Converts text responses to offline speech output                               | pyttsx3, threading, queue                     |
+| `models/intent_model.py`            | Classifies user input into structured intents and entities                     | Ollama, prompt engineering, JSON, regex       |
+| `models/ollama_client.py`           | Communicates with the local LLM for intent classification                      | Ollama (local LLM)                            |
+| `plugins/system/open_app.py`        | Opens applications installed on the system                                     | PowerShell, Windows AppsFolder, subprocess    |
+| `plugins/system/close_app.py`       | Closes running system applications                                             | taskkill, subprocess                          |
+| `plugins/system/volume.py`          | Controls system audio volume                                                   | Windows audio APIs                            |
+| `plugins/system/system_status.py`   | Retrieves system status information                                            | psutil, system APIs                           |
+| `plugins/system/screenshot.py`      | Captures screenshots of the system                                             | PIL, OS-level screenshot tools                |
+| `plugins/system/power.py`           | Performs power operations like shutdown or restart                             | OS power commands                             |
+| `plugins/system/voice_toggle.py`    | Enables or disables microphone and speech output                               | Global state toggling                         |
+| `plugins/productivity/notes.py`     | Manages creation, listing, and deletion of notes                               | SQLite, in-memory storage                     |
+| `plugins/productivity/reminders.py` | Handles reminders and scheduling tasks                                         | SQLite, scheduling logic                      |
+| `plugins/productivity/alarms.py`    | Creates and manages alarms                                                     | Time-based triggers                           |
+| `plugins/Memory/memory_recall.py`   | Recalls short-term memory and past context                                     | State memory retrieval                        |
+
+---
+
+## 🧰 Overall Technologies Used
+
+| Category                   | Technologies                |
+| -------------------------- | --------------------------- |
+| Programming Language       | Python                      |
+| Speech-to-Text             | OpenAI Whisper              |
+| Text-to-Speech             | pyttsx3 (offline)           |
+| AI / Intent Classification | Ollama, phi3:mini           |
+| Operating System Control   | PowerShell, Windows APIs    |
+| Audio Processing           | sounddevice, ffmpeg         |
+| Storage                    | SQLite                      |
+| Concurrency                | threading, queue            |
+| Architecture               | Plugin-based modular design |
+
+---
+
+### ✅ This version is:
+
+* Clear
+* Technical
+* Non-AI sounding
+* Perfect for **college reports**, **GitHub**, and **documentation**
+
+If you want next, I can:
+
+* Convert this into **PDF / DOC format**
+* Shorten it for **project synopsis**
+* Add **architecture diagram explanation**
+* Create **viva/defense explanation points**
+
+Just tell me.
 
 
 
-changed to plugin based architecutre
-
-┌───────────────────────┐
-│        USER           │
-│  (text / voice input) │
-└───────────┬───────────┘
-            │
-            ▼
-┌───────────────────────┐
-│   INTENT / MODE       │
-│   DETECTION           │
-│  (general / code /    │
-│   search / command)   │
-└───────────┬───────────┘
-            │
-            ▼
-┌────────────────────────────────────────┐
-│              CHAT ROUTER                │
-│          (ChatModel)                    │
-│                                        │
-│  • Chooses model                        │
-│  • Chooses tool                         │
-│  • Controls context                     │
-└───────────┬────────────────────────────┘
-            │
-            │  (Memory Layer lives here)
-            ▼
-┌────────────────────────────────────────┐
-│            MEMORY LAYER                 │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │ Raw Conversation Store            │  │
-│  │ (SQLite - conversations table)   │  │
-│  └───────────────┬──────────────────┘  │
-│                  │                     │
-│                  ▼                     │
-│  ┌──────────────────────────────────┐  │
-│  │ Rolling Summary Brain             │  │
-│  │ (llama3:instruct)                 │  │
-│  │                                  │  │
-│  │  • Compresses old turns           │  │
-│  │  • Preserves goals & context      │  │
-│  │  • Deletes safely                 │  │
-│  └───────────────┬──────────────────┘  │
-│                  │                     │
-│                  ▼                     │
-│  ┌──────────────────────────────────┐  │
-│  │ Context Assembler                 │  │
-│  │                                  │  │
-│  │  System Prompt                    │  │
-│  │  + Conversation Summary           │  │
-│  │  + Recent Turns (last N)          │  │
-│  └──────────────────────────────────┘  │
-└───────────┬────────────────────────────┘
-            │
-            ▼
-┌───────────────────────┐
-│      MODEL CALL       │
-│  (phi3 / llama3 /     │
-│   code / tools)       │
-└───────────┬───────────┘
-            │
-            ▼
-┌───────────────────────┐
-│    RESPONSE OUTPUT    │
-│                                        │
-│  • User sees reply                     │
-│  • Assistant stores response           │
-└───────────────────────┘
-
-
-User Message
-   ↓
-Stored in Memory
-   ↓
-(If long) → Summarize
-   ↓
-Summary Updated
-   ↓
-Recent Context Built
-   ↓
-Model Responds
-   ↓
-Response Stored
+to run backend - uvicorn core.api_server:app --reload
+to run frontend - npx vite

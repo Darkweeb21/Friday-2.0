@@ -29,13 +29,24 @@ class GeneralChatPlugin(PluginBase):
             fact_extractor = FactModel(llm.memory)
             fact_extractor.extract_and_store(user_input)
         except Exception:
-            # Never allow memory extraction to break chat
             pass
 
         # =====================================================
-        # 🧠 NORMAL CHAT FLOW
+        # 🧠 CONTROLLED CHAT FLOW (FIXED)
         # =====================================================
         response = llm.chat([
+            {
+                "role": "system",
+                "content": (
+                    "You are FRIDAY, a concise desktop AI assistant.\n"
+                    "Rules:\n"
+                    "- Be brief and direct.\n"
+                    "- For greetings or unclear inputs, reply in 1 short sentence.\n"
+                    "- Do NOT assume the user wants technical explanations.\n"
+                    "- Only give detailed answers if the user explicitly asks.\n"
+                    "- Avoid storytelling, philosophy, or unrelated topics."
+                )
+            },
             {"role": "user", "content": user_input}
         ])
 

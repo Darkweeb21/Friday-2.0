@@ -1,29 +1,16 @@
 # main.py
+# Bootstrap application (loads all plugins)
+import core.bootstrap
 
-from core.state import confirmation_manager
-from core import state
 from models.intent_model import IntentModel
-from core.router import route
-
-# 🔌 Force plugin imports (REQUIRED for registration)
-import plugins.system.open_app
-import plugins.system.close_app
-import plugins.system.volume
-import plugins.system.screenshot
-import plugins.system.system_status
-import plugins.system.power
-import plugins.system.voice_toggle
-
-import plugins.chat.general_chat
-import plugins.productivity.reminders
-import plugins.productivity.notes
-import plugins.productivity.alarms
-import plugins.Memory.memory_recall
 
 from input.voice import VoiceInput
 from input.text import TextInput
 from output.console import respond
 from output.speech import stop_speaking
+from core import state
+from core.state import confirmation_manager
+from core.router import route
 
 
 def safe_respond(text: str):

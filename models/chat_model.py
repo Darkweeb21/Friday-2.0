@@ -1,7 +1,7 @@
 from models.ollama_client import OllamaClient
 from models.code_model import CodeModel
 from models.summary_model import SummaryModel
-from models.fact_model import FactModel   # ✅ NEW
+from models.fact_model import FactModel
 from core.memory import MemoryStore
 
 
@@ -13,11 +13,14 @@ class ChatModel:
         # 🧠 Memory layers
         self.memory = MemoryStore()
         self.summary_model = SummaryModel(self.memory)
-        self.fact_model = FactModel(self.memory)   # ✅ NEW
+        self.fact_model = FactModel(self.memory)
 
         self.session_id = "default"
 
     def chat(self, messages: list, mode: str = "general") -> str:
+        # 🔧 Preserve system messages
+        system_messages = [m for m in messages if m.get("role") == "system"]
+
         user_text = messages[-1]["content"]
         token_estimate = len(user_text.split())
 
@@ -32,7 +35,7 @@ class ChatModel:
         )
 
         # -----------------------------
-        # 🧠 Extract FACTS (background, safe)
+        # 🧠 Extract FACTS (background)
         # -----------------------------
         self.fact_model.extract_and_store(user_text)
 
@@ -46,24 +49,25 @@ class ChatModel:
         # Build context with memory
         # -----------------------------
         chat_messages = []
+        chat_messages.extend(system_messages)
 
-        # 🔑 Inject FACT memory FIRST
+        # 🔑 Inject FACT memory as SYSTEM
         facts = self.memory.get_all_facts()
         if facts:
             facts_text = "\n".join(
                 f"- {f['key']}: {f['value']}" for f in facts
             )
             chat_messages.append({
-                "role": "user",
-                "content": f"[Known facts]\n{facts_text}"
+                "role": "system",
+                "content": f"Known facts about the user:\n{facts_text}"
             })
 
-        # 🧠 Inject conversation summary (guarded)
+        # 🧠 Inject conversation summary as SYSTEM
         summary = self.memory.get_summary(self.session_id)
         if summary and len(user_text.split()) > 3:
             chat_messages.append({
-                "role": "user",
-                "content": f"[Conversation summary for context only]\n{summary}"
+                "role": "system",
+                "content": f"Conversation summary (context only):\n{summary}"
             })
 
         # 🔄 Inject recent conversation
@@ -110,12 +114,3 @@ class ChatModel:
         )
 
         return response
-
-    # --------------------------------------------------
-    # Utility generation (unchanged)
-    # --------------------------------------------------
-    def generate(self, prompt: str, mode: str = "search") -> str:
-        return self.client.generate(
-            model="llama3:instruct",
-            prompt=prompt
-        )

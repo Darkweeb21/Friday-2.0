@@ -1,5 +1,6 @@
 import time
 from core.plugin_base import PluginBase
+import comtypes
 
 try:
     import pycaw
@@ -18,6 +19,9 @@ class VolumePlugin(PluginBase):
     requires_confirmation = False
 
     def _get_volume_interface(self):
+        # 🔑 REQUIRED for FastAPI / threaded execution
+        comtypes.CoInitialize()
+
         devices = AudioUtilities.GetSpeakers()
         interface = devices.Activate(
             IAudioEndpointVolume._iid_, CLSCTX_ALL, None

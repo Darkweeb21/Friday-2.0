@@ -179,6 +179,32 @@ class IntentModel:
 
                 "User: reopen the last app\n"
                 "{ \"intent\": \"OPEN_APP\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+                
+                # -------- CHAT (GENERAL CONVERSATION) --------
+                "User: how are you\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: hi\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: hello\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: hey\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: good morning\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.95, \"entities\": {} }\n\n"
+                
+                "User: how is it going\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+                
+                "User: what are you doing\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+                
+                "User: are you there\n"
+                "{ \"intent\": \"GENERAL_CHAT\", \"confidence\": 0.90, \"entities\": {} }\n\n"
+
 
                 # ---------------- FALLBACK ----------------
                 "User: gibberish command\n"
@@ -189,10 +215,14 @@ class IntentModel:
                 "- No explanations\n"
                 "- confidence must be between 0 and 1\n"
                 "- Extract entities when relevant (app, action, level, item)\n"
+                "- GENERAL_CHAT must be used for greetings, social messages, or conversational questions\n"
+                "- System intents (OPEN_APP, CLOSE_APP, VOLUME_CONTROL, POWER_CONTROL, etc.) require a clear action request\n"
+                "- Contextual commands like \"close it\" or \"open it again\" should only be used when they clearly refer to a previous action\n"
                 "- If the user input contains the word \"reminder\", NEVER return UNKNOWN\n"
                 "- If the user input contains the word \"note\", NEVER return UNKNOWN\n"
-                "- If the user input contains \"close it\" or \"close that\", NEVER return CANCEL\n"
-                "- If the user input contains \"again\" and refers to an action, NEVER return GENERAL_CHAT\n\n"
+                "- If the input is ambiguous or conversational, prefer GENERAL_CHAT over system actions\n"
+                "- Do NOT infer system actions from greetings or emotional expressions\n\n"
+
 
                 "User input:\n"
                 "{user_input}\n\n"
